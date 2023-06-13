@@ -199,7 +199,7 @@ async function join() {
 
         resolve(track)
       }).catch(e => {
-        alert("Mic error: " + e)
+        alert("Mic error: " + e.message)
         reject(e)
 
       })
@@ -224,7 +224,7 @@ async function join() {
 
         resolve()
       }).catch(e => {
-        alert("Camera error: " + e)
+        alert("Camera error: " + e.message)
         reject(e)
 
       })
@@ -559,7 +559,22 @@ async function mediaDeviceTest() {
   // create local tracks, using microphone and camera
   AgoraRTC.createMicrophoneAudioTrack({
     encoderConfig: "music_standard"
-  }), AgoraRTC.createCameraVideoTrack()]);
+  }).catch(e => {
+    alert("Mic error: " + e.message)
+    reject(e)
+
+  }), AgoraRTC.createCameraVideoTrack().catch(e => {
+    alert("Camera error: " + e.message)
+    reject(e)
+
+  })]);
+
+
+
+ 
+
+
+  
 
   // play local track on device detect dialog
   localTracks.videoTrack.play("pre-local-player");

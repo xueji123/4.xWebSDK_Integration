@@ -51,9 +51,17 @@ input {
   display: none;
 }
 
+
+
 #client-stats {
   margin-top: 10px;
 }
+
+#screenClient-stats{
+  margin-top: 10px;
+}
+
+
 
 .stats {
   color: gray;

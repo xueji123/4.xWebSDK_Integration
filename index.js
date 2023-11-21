@@ -4,6 +4,25 @@ var client = AgoraRTC.createClient({ mode: "live", codec: "vp8" });
 
 var screenClient = AgoraRTC.createClient({ mode: "live", codec: "vp8" });
 
+// //  v4.18.0 以前的监听方式
+// AgoraRTC.onCameraChanged = (info) => {
+//   console.log("camera changed!", info.state, info.device);
+// };
+
+
+// v4.18.0 及以上版本新支持的监听方式
+// AgoraRTC.on("camera-changed", (info) => {
+//   console.log("Camera changed!", info.state, info.device);
+// });
+
+// AgoraRTC.on("microphone-changed", (info) => {
+//   console.log("Microphone changed!", info.state, info.device);
+// });
+
+// AgoraRTC.on("playback-device-changed", (info) => {
+//   console.log("Playback device changed!", info.state, info.device);
+// });
+
 
 
 
@@ -248,8 +267,9 @@ async function join() {
   // add event listener to play remote tracks when remote user publishs.
 
 
-  client.on("user-published", handleUserUnpublished);
+  client.on("user-published", handleUserPublished);
   client.on("user-unpublished", handleUserUnpublished);
+  client.on("user-info-updated", handleUserUserInfoUpdate);
 
   // if (client.remoteUsers[0] && Number(client.remoteUsers[0].uid) == Number(options.uid + "666")) {
   //   client.off("user-published", handleUserPublished);
@@ -295,9 +315,9 @@ async function join() {
       AgoraRTC.createCameraVideoTrack({
         optimizationMode: "detail",
         encoderConfig: {
-          width: 320,
+          width: 640,
           // 支持指定一个范围和参考值，具体配置参考相关 API 文档
-          height: 480,
+          height: 360,
           frameRate: 15,
           bitrateMin: 400, bitrateMax: 600,
         },
@@ -387,8 +407,16 @@ async function createScreen() {
 
   return new Promise((resolve, reject) => {
 
+  
+
+
     AgoraRTC.createScreenVideoTrack({
-      encoderConfig: "1080p_1", optimizationMode: "detail"
+      encoderConfig: {
+        width: 2560,
+        // 支持指定一个范围和参考值，具体配置参考相关 API 文档
+        height: 1440,
+        frameRate: 5
+      },optimizationMode: "detail"
     }, "auto").then((screenTrack) => {
       if (screenTrack instanceof Array) {
         localScreenTracks.screenTrackV = screenTrack[0];
@@ -506,7 +534,13 @@ async function doNetworkTest() {
     [localTracks.audioTrack, localTracks.videoTrack] = await Promise.all([
       // create local tracks, using microphone and camera
       AgoraRTC.createMicrophoneAudioTrack({ microphoneId: currentMic.deviceId, encoderConfig: "music_standard" }),
-      AgoraRTC.createCameraVideoTrack({ cameraId: currentCam.deviceId })
+      AgoraRTC.createCameraVideoTrack({ cameraId: currentCam.deviceId,encoderConfig: {
+        width: 640,
+        // 支持指定一个范围和参考值，具体配置参考相关 API 文档
+        height: 360,
+        frameRate: 15,
+        bitrateMin: 1000, bitrateMax: 1500,
+      }})
     ]);
   }
 
@@ -748,6 +782,7 @@ async function subscribe(user, mediaType) {
 }
 
 function handleUserPublished(user, mediaType) {
+  console.log(`666666 remote user published uid: ${user.uid} mediaType: ${mediaType}`)
 
   if (user.uid != Number(options.uid + "666")) {
     const id = user.uid;
@@ -758,9 +793,14 @@ function handleUserPublished(user, mediaType) {
 }
 
 function handleUserUnpublished(user) {
+  console.log(`666666 remote user unpublished uid: ${user.uid}`)
   const id = user.uid;
   delete remoteUsers[id];
   $(`#player-wrapper-${id}`).remove();
+}
+
+function handleUserUserInfoUpdate(uid,msg){
+console.log(`666666 user-info-updated uid: ${uid} msg: ${msg}`)
 }
 
 
@@ -812,7 +852,7 @@ async function mediaDeviceTest() {
         // 支持指定一个范围和参考值，具体配置参考相关 API 文档
         height: 360,
         frameRate: 15,
-        bitrateMin: 300, bitrateMax: 400,
+        bitrateMin: 1000, bitrateMax: 1600,
       },
     }).catch(e => {
       alert("Camera error: " + e.message)
